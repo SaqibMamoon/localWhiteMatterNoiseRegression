@@ -1,0 +1,46 @@
+{
+	"name": "denoisefmriprep",
+	"label": "denoisefmriprep: Denoising on fmriprep output",
+	"description": "This gear performs denoising on fmriprep data using denoiser (https://github.com/arielletambini/denoiser) and other custom matlab tools",
+	"author": "Arielle Tambini, Andrew Bock",
+	"maintainer": "Ozenc Taskin <huseyinozenc.taskin@pennmedicine.upenn.edu>",
+	"source": "https://github.com/gkaguirrelab/mriLDOGAnalysis/fw_gears",
+	"url": "https://github.com/gkaguirrelab/mriLDOGAnalysis",
+	"version": "0.1.0",
+	"custom": {
+		"flywheel": {
+			"suite": "GKAguirreLab"
+		},
+		"docker-image": ""
+	},
+	"license": "Other",
+	"config": {
+		"regressWhiteMAtter":  {
+			"default": true,
+  			"description": "Perform white matter regression. https://github.com/gkaguirrelab/MRklar/blob/master/functional/remove_localWM.m",
+  			"type": "boolean"
+		},
+		"highPassFilter":  {
+			"default": ".009 Hz",
+  			"description": "High pass filter",
+  			"type": "string"
+		},
+		"lowPassFilter":  {
+			"default": ".1 Hz",
+  			"description": "Low pass filter",
+  			"type": "string"
+		}
+	},
+	"inputs": {
+		"fmriprepOutputArchive": {
+			"description": "fmriprep output archive",
+			"base": "file",
+			"optional": false,
+			"type": {
+				"enum": [
+					"archive"
+				]
+			}
+		}
+	}
+}
