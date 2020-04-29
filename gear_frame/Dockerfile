@@ -14,6 +14,7 @@ RUN apt-get update \
     git \
     python3 \
     python3-pip \
+    wget \
     zip \
     unzip
 RUN unzip -q /tmp/denoiser-master.zip -d /tmp
