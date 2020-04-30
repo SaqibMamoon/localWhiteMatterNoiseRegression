@@ -1,4 +1,4 @@
-function [noWMtc] = remove_localWM(func,brainMask,whiteMatterMask,radius)
+function [noWMtc] = remove_localWM_FwVersion(func,brainMask,whiteMatterMask,outputPath,radius)
 % Creates local white matter timecourses for each voxel, and saves these
 %   timecourses as a 4D volume ['w' func '.nii.gz']. The default 'func'
 %   input is 'drf', so the final 4D volume will be 'wdrf.nii.gz'. Will
@@ -11,30 +11,26 @@ function [noWMtc] = remove_localWM(func,brainMask,whiteMatterMask,radius)
 %   Updated by Andrew S Bock Jan 2016 (minor filename and header changes)
 
 %% Set default parameters
-% if ~exist('session_dir','var')
-%     error('"session_dir" not defined')
-% end
-if ~exist('func','var')
-    func = 'drf'; % functional data file used for registration
-end
 if ~exist('radius','var')
     radius = 15;
 end
-% %% Find bold run directories
-% d = find_bold(session_dir);
-% nruns = length(d);
-% disp(['Session_dir = ' session_dir]);
-% disp(['Number of runs = ' num2str(nruns)]);
-% %% Set runs
-% if ~exist('runNum','var')
-%     runNum = 1:length(d);
-% end
+
 %% Remove local white matter
 % Load in brain and white matter masks, as well as the functional timecourse file
-brain = load_nifti(brainMask); 
-brain = brain.vol;
-wmmask = load_nifti(whiteMatterMask); 
-WM=wmmask.vol;
+[~,~,brainMaskExt] = fileparts(brainMask); 
+if strcmp(brainMaskExt, '.gz')
+    brain = load_nifti(brainMask); 
+    brain = brain.vol;
+else
+    brain = load_mgh(brainMask);
+end    
+[~,~,wmmaskMaskExt] = fileparts(whiteMatterMask); 
+if strcmp(wmmaskMaskExt, '.gz')
+    wmmask = load_nifti(whiteMatterMask); 
+    WM = wmmask.vol;
+else
+    WM = load_mgh(whiteMatterMask);
+end
 fmri = load_nifti(func);
 voxsize = fmri.pixdim(2);
 dims=size(fmri.vol);
@@ -79,9 +75,11 @@ beta = r .* std(tc(GMind,:),[],2);
 tc(GMind,:) = tc(GMind,:) - (localWMtc .* repmat(beta,1,size(tc,2)));
 
 %% Save output volume
-disp(['Saving clean timecourses to ' fullfile(session_dir,d{rr},['w' func '.nii.gz'])]);
 noWMtc = reshape(tc,size(fmri.vol));
 fmri.vol = noWMtc;
-save_nifti(fmri,fullfile(session_dir,d{rr},['w' func '.nii.gz']));
+
+% Get the name of the func file
+[~,name,ext] = fileparts(func); 
+save_nifti(fmri, fullfile(outputPath, strcat('noWm_', name, ext)))
 disp('done.')
 end
