@@ -33,9 +33,6 @@ radius = 15;
 % Resample the masks to match the BOLD res for the localWM func - requires FSL and Freesurfer 
 resample = true;
 
-%% Download the functional data
-outputFileSuffix = 'N292_lightFluxFlicker.zip';
-
 % Create the input and output dir if they do not exist
 if ~exist(inputDataDir,'dir')
     mkdir(inputDataDir);
