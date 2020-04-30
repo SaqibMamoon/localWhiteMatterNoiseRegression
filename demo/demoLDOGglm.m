@@ -31,7 +31,7 @@ brainMask = 'brainmask.mgz';
 radius = 15;
 
 % Resample the masks to match the BOLD res for the localWM func - requires FSL and Freesurfer 
-resample = false;
+resample = true;
 
 %% Download the functional data
 outputFileSuffix = 'N292_lightFluxFlicker.zip';
@@ -112,6 +112,7 @@ if ~isfile(brainMaskFinalSavePath)
     analysisRecon.downloadFileZipMember(reconAllZipName, brainMaskPath, brainMaskFinalSavePath);
 end
 
+% Convert to nifti and resample
 if resample
     newNiftiWhite = fullfile(inputDataDir, 'wm.seg.nii.gz');
     newNiftiBrain = fullfile(inputDataDir, 'brainmask.nii.gz');
@@ -125,6 +126,7 @@ if resample
     system(command4);
     fprintf('Calling remove_localWM')
     remove_localWM_FwVersion(boldFinalSavePath, newNiftiBrain, newNiftiWhite, outputDataDir, radius)
+% Run the function without resampling if your images are same size
 else
     fprintf('Calling remove_localWM')
     remove_localWM_FwVersion(boldFinalSavePath, brainMaskFinalSavePath, whiteMatterMaskFinalSavePath, outputDataDir, radius)
