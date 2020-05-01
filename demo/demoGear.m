@@ -3,7 +3,15 @@
 % This routine downloads some fmriprep archive images flywheel and then
 % submits the files for analysis
 
-%% Variable declaration
+%% Find the python code to resample and niftify 
+[~, userID] = system('whoami');
+userID = strtrim(userID);
+if ismac
+    pythonScript = fullfile('/Users/', userID, '/Documents/MATLAB/projects/localWhiteMatterNoiseRegression/demo/niftify_and_resample.py');
+elseif isunix 
+    pythonScript = fullfile('/home/', userID, '/Documents/MATLAB/projects/localWhiteMatterNoiseRegression/demo/niftify_and_resample.py');
+end
+    %% Variable declaration
 % Project name, input and output path
 projectName = 'localWhiteMatterNoiseRegression';
 inputDataDir = getpref(projectName,'inputDataDir');
@@ -113,14 +121,14 @@ end
 if resample
     newNiftiWhite = fullfile(inputDataDir, 'wm.seg.nii.gz');
     newNiftiBrain = fullfile(inputDataDir, 'brainmask.nii.gz');
-    command1 = ['mri_convert ' whiteMatterMaskFinalSavePath ' ' newNiftiWhite];  
-    command2 = ['mri_convert ' brainMaskFinalSavePath ' ' newNiftiBrain];   
-    command3 = ['flirt -in ' newNiftiWhite ' -dof 6 -ref ' boldFinalSavePath ' -out ' newNiftiWhite];
-    command4 = ['flirt -in ' newNiftiBrain ' -dof 6 -ref ' boldFinalSavePath ' -out ' newNiftiBrain];
-    system(command1);
-    system(command2);
-    system(command3);
-    system(command4);
+    if ~isfile(newNiftiWhite)
+        command1 = ['python3 ' pythonScript ' ' whiteMatterMaskFinalSavePath ' ' boldFinalSavePath ' ' newNiftiWhite];
+        system(command1)
+    end
+    if ~isfile(newNiftiBrain)
+        command2 = ['python3 ' pythonScript ' ' brainMaskFinalSavePath ' ' boldFinalSavePath ' ' newNiftiBrain];
+        system(command2);
+    end
     fprintf('Calling remove_localWM')
     remove_localWM_FwVersion(boldFinalSavePath, newNiftiBrain, newNiftiWhite, outputDataDir, radius)
 % Run the function without resampling if your images are same size
