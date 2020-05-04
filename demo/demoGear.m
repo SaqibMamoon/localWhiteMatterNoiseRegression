@@ -64,7 +64,7 @@ zipMembers = zipInfo.members;
 
 % Loop through the members of the zip archive and find the path to the bold 
 % file we want to download
-fprintf('Downloading files from the fmriprep archive')
+fprintf('Downloading files from the fmriprep archive\n')
 for ii = 1:length(zipMembers)
     [filepath,name,ext] = fileparts(zipMembers{ii}.path); 
     if strcmp(strcat(name,ext), boldName)
@@ -97,7 +97,7 @@ reconAllzipMembers = zipInfo.members;
 
 % Loop through the members of the zip archive and find the path to the white 
 % matter file.
-fprintf('Downloading files from the recon-all archive')
+fprintf('Downloading files from the recon-all archive\n')
 for ii = 1:length(reconAllzipMembers)
     [filepath,name,ext] = fileparts(reconAllzipMembers{ii}.path); 
     if strcmp(strcat(name,ext), whiteMatterMask)
