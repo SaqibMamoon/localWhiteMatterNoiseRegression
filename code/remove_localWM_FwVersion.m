@@ -31,6 +31,15 @@ if strcmp(wmmaskMaskExt, '.gz')
 else
     WM = load_mgh(whiteMatterMask);
 end
+
+% The WM mask assigns each voxel a range of values. Zero is clearly outside
+% the brain, and 100 seems to be a value in the center of the white matter.
+% We adopt a threshold of 50 to distinguish white matter from non-white
+% matter voxels, and then binarize the mask
+wmThresh = 50;
+WM(WM<wmThresh) = 0;
+WM(WM>=wmThresh) = 1;
+
 fmri = load_nifti(func);
 voxsize = fmri.pixdim(2);
 dims=size(fmri.vol);
