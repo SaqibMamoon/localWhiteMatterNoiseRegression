@@ -1,18 +1,27 @@
-function [noWMtc] = remove_localWM_FwVersion(func,brainMask,whiteMatterMask,outputPath,radius)
+function remove_localWM_FwVersion(func,brainMask,whiteMatterMask,outputPath,radius)
 % Creates local white matter timecourses for each voxel, and saves these
 %   timecourses as a 4D volume ['w' func '.nii.gz']. The default 'func'
 %   input is 'drf', so the final 4D volume will be 'wdrf.nii.gz'. Will
 %   also return an output 4D matrix 'noWMtc'.
+%
+% Inputs:
+%   func: Functional image
+%   brainMask: Binary brain mask
+%   whiteMatterMask: Binary white matter mask
+%   outputPath: Path to save the cleaned up image
+%   radius: String!! search radius
 %
 % Usage:
 %   [noWMtc] = remove_localWM(session_dir,runNum,func,radius)
 %
 %   Written by Marcelo G Mattar  Dec 2015
 %   Updated by Andrew S Bock Jan 2016 (minor filename and header changes)
-
+%   Modified for a Flywheel Gear May4
 %% Set default parameters
 if ~exist('radius','var')
     radius = 15;
+else
+    radius = str2num(radius)
 end
 
 %% Remove local white matter
@@ -31,14 +40,6 @@ if strcmp(wmmaskMaskExt, '.gz')
 else
     WM = load_mgh(whiteMatterMask);
 end
-
-% The WM mask assigns each voxel a range of values. Zero is clearly outside
-% the brain, and 100 seems to be a value in the center of the white matter.
-% We adopt a threshold of 50 to distinguish white matter from non-white
-% matter voxels, and then binarize the mask
-wmThresh = 50;
-WM(WM<wmThresh) = 0;
-WM(WM>=wmThresh) = 1;
 
 fmri = load_nifti(func);
 voxsize = fmri.pixdim(2);
