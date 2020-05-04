@@ -1,11 +1,11 @@
 {
-	"name": "denoisefmriprep",
-	"label": "denoisefmriprep: Denoising on fmriprep output",
-	"description": "This gear performs denoising on fmriprep data using denoiser (https://github.com/arielletambini/denoiser) and other custom matlab tools",
-	"author": "Arielle Tambini, Andrew Bock",
+	"name": "localwhitematternoiseregression",
+	"label": "localWhiteMatterNoiseRegression: Removes white matter noise from adjacent gray matter voxels",
+	"description": "This gear performs spherical search around the white matter and removes average white matter signal from the adjacent gray matter voxels. It can work with individual nifti images or fmriprep output archives. If an fmiprep output is used as input for this gear, you need to set the -fmriprepOutputSpace- config to the output space you obtained from your fmriprep analysis (e.g. func or MNI152NLin2009cAsym). Multiple output spaces can be used just like the fmriprep gear by separating the names with spaces and the gear will find all of those images. This algorithm also requires a white matter mask and prefers to obtain those from a freesurfer folder. If your fmriprep run does not include a recon-all folder, you can input a separate recon-all zip archive. Alternatively, you can enable the useProseg option and the gear will use the white matter probability segmentations in the fmriprep output which are calculated even when recon-all option is not used for fmriprep. Recon-all archive is required if you input a single nifti image instead of an fmriprep archive.",
+	"author": "Marcello Mattar, Andrew Bock",
 	"maintainer": "Ozenc Taskin <huseyinozenc.taskin@pennmedicine.upenn.edu>",
-	"source": "https://github.com/gkaguirrelab/mriLDOGAnalysis/fw_gears",
-	"url": "https://github.com/gkaguirrelab/mriLDOGAnalysis",
+	"source": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/blob/master/code/remove_localWM_FwVersion.m",
+	"url": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/tree/master/gear_frame",
 	"version": "0.1.0",
 	"custom": {
 		"flywheel": {
@@ -15,19 +15,9 @@
 	},
 	"license": "Other",
 	"config": {
-		"regressWhiteMAtter":  {
-			"default": true,
-  			"description": "Perform white matter regression. https://github.com/gkaguirrelab/MRklar/blob/master/functional/remove_localWM.m",
-  			"type": "boolean"
-		},
-		"highPassFilter":  {
-			"default": ".009 Hz",
-  			"description": "High pass filter",
-  			"type": "string"
-		},
-		"lowPassFilter":  {
-			"default": ".1 Hz",
-  			"description": "Low pass filter",
+		"radius":  {
+			"default": "15",
+  			"description": "Search radius",
   			"type": "string"
 		}
 	},
