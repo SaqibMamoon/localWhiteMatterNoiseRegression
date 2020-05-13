@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+
+import os
+import json
+from make_binary_masks_from_fsdir import make_binary_masks_from_fsdir
+
+###################### Define the Paths and parameters ########################
+
+# Set paths and create some folders
+flywheel_base ='/flywheel/v0/'
+first_output_dir = '/firstOutput'
+os.system('mkdir %s'%first_output_dir)
+final_output_dir = os.path.join(flywheel_base, 'output')
+manifest_file = os.path.join(flywheel_base, 'manifest.json')
+config_path = os.path.join(flywheel_base, 'config.json')
+fsl_environment_path = 'FSLDIR=/usr/lib/fsl/5.0;. /etc/fsl/5.0/fsl.sh;PATH=${FSLDIR}:${PATH};export FSLDIR PATH;/usr/lib/fsl/5.0/'
+freesurfer_environment_path = 'export FREESURFER_HOME=/freesurfer;/bin/bash -c \'source $FREESURFER_HOME/FreeSurferEnv.sh &>/dev/null\';export SUBJECTS_DIR=%s;/freesurfer/bin/'
+mcr_path = '/usr/local/MATLAB/MATLAB_Runtime/v97' 
+compiled_matlab_function = '/opt/compiled_localWM/run_remove_localWM_FwVersion.sh'
+
+# Unzip the fmriprep zip
+fmriprepOutputArchive_folder = os.path.join(flywheel_base, 'input/fmriprepOutputArchive')
+fmriprepOutputArchive = os.path.join(fmriprepOutputArchive_folder, os.listdir(fmriprepOutputArchive_folder)[0]) 
+unzipped_folder = '/prep'
+os.system('mkdir %s' % unzipped_folder)
+os.system('unzip -q %s -d %s' % (fmriprepOutputArchive, unzipped_folder))
+mainprep_folder = os.path.join(unzipped_folder, os.listdir(unzipped_folder)[0], 'fmriprep')
+for i in os.listdir(mainprep_folder):
+    if 'sub' in i:
+        prep_subject = os.path.join(mainprep_folder, i)
+        for ii in os.listdir(prep_subject):
+            if 'ses' in ii:
+                prep_session = os.path.join(prep_subject, ii)
+prep_func_dir = os.path.join(prep_session, 'func')
+images_in_T1 = []
+for image in os.listdir(prep_func_dir):
+    if 'space-T1w_desc-preproc_bold.nii.gz' in image:
+        found_image = os.path.join(prep_func_dir, image)
+        images_in_T1.append(found_image)
+
+# Unzip the fmriprep zip
+reconAllArchive_folder = os.path.join(flywheel_base, 'input/reconAllArchive')
+reconAllArchive = os.path.join(reconAllArchive_folder, os.listdir(reconAllArchive_folder)[0]) 
+unzipped_folder = '/reconall'
+os.system('mkdir %s' % unzipped_folder)
+os.system('unzip -q %s -d %s' % (reconAllArchive, unzipped_folder))
+mainrecon_folder = os.path.join(unzipped_folder, os.listdir(unzipped_folder)[0])
+
+###################Parse Config Here##########################################
+
+with open(config_path) as config_file:
+    job_config = json.load(config_file)
+config = job_config['config']
+
+radius = config['radius']
+whiteMatterBinaryThreshold = config['whiteMatterBinaryThreshold']
+BrainMaskBinaryThreshold = config['BrainMaskBinaryThreshold']
+
+# ############################# Process images ##################################
+
+intermediate_files = '/intermediate_files'
+os.system(intermediate_files)
+brain_mask, white_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, freesurfer_environment_path, fsl_environment_path, intermediate_files, threshold_brain=BrainMaskBinaryThreshold, threshold_white=whiteMatterBinaryThreshold)
+
+for i in images_in_T1:
+    image_name = os.path.split(i)[1][:-7]
+    cmd = '%s %s %s %s %s %s %s' % (compiled_matlab_function, mcr_path,
+                                    i, brain_mask, white_matter_mask,
+                                    first_output_dir, radius)
+    os.system(cmd)
+                
+os.system('cd %s; zip -q -r %s *' % (first_output_dir, final_output_dir))

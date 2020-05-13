@@ -5,6 +5,8 @@ MAINTAINER Ozzy(ozenctaskin@hotmail.com)
 ENV FLYWHEEL /flywheel/v0/
 RUN mkdir -p ${FLYWHEEL}
 COPY manifest.json run ${FLYWHEEL}
+COPY lmake_binary_masks_from_fsdir.py make_binary_masks_from_fsdir.py ${FLYWHEEL}
+COPY compiled_localWM/ /opt/compiled_localWM
 RUN chmod +x /flywheel/v0/run
 
 # Install required packages    
@@ -15,7 +17,9 @@ RUN apt-get update \
     python3-pip \
     wget \
     zip \
-    unzip
+    unzip \
+    fsl-core
+
 # Install python packages
 RUN pip3 install --upgrade pip
 
@@ -24,6 +28,13 @@ RUN wget http://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/2/deploy
 RUN mkdir matlabins
 RUN unzip MATLAB_Runtime_R2019b_Update_2_glnxa64.zip -d /matlabins/
 RUN /matlabins/install -mode silent -agreeToLicense yes
+
+# Download and install Freesurfer on call
+RUN wget https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+RUN mkdir freesurfer
+RUN tar -zxf freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz 
+COPY license.txt /freesurfer/license.txt
+ENV FREESURFER_HOME /freesurfer
 
 # Set the entrypoint  
 # ENTRYPOINT /flywheel/v0/run
