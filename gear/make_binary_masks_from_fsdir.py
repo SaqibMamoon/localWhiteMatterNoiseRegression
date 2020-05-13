@@ -41,4 +41,4 @@ def make_binary_masks_from_fsdir(freesurfer_subject_folder, freesurfer_environme
                                                         binary_white_mask)    
     os.system(binarize_brain_command + ';' + binarize_white_command)
     
-    return (binary_brain_mask, binary_white_mask)
+    return (converted_raw_avg_destination, registered_brain_destination, registered_white_destination, binary_brain_mask, binary_white_mask)
