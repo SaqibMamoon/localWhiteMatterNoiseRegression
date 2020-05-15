@@ -5,7 +5,7 @@ MAINTAINER Ozzy(ozenctaskin@hotmail.com)
 ENV FLYWHEEL /flywheel/v0/
 RUN mkdir -p ${FLYWHEEL}
 COPY manifest.json run ${FLYWHEEL}
-COPY lmake_binary_masks_from_fsdir.py make_binary_masks_from_fsdir.py ${FLYWHEEL}
+COPY make_binary_masks_from_fsdir.py make_binary_masks_from_fsdir.py ${FLYWHEEL}
 COPY compiled_localWM/ /opt/compiled_localWM
 RUN chmod +x /flywheel/v0/run
 

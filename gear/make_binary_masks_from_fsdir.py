@@ -25,7 +25,7 @@ def make_binary_masks_from_fsdir(freesurfer_subject_folder, freesurfer_environme
     registration_command_brain = '%s -in %s -ref %s -dof 6 -out %s -v' % (os.path.join(fsl_environment_path, 'flirt'), 
                                                                        converted_brain_destination, 
                                                                        converted_raw_avg_destination, registered_brain_destination)
-    registration_command_brain = '%s -in %s -ref %s -dof 6 -out %s -v' % (os.path.join(fsl_environment_path, 'flirt'), 
+    registration_command_white = '%s -in %s -ref %s -dof 6 -out %s -v' % (os.path.join(fsl_environment_path, 'flirt'), 
                                                                        converted_white_destination, 
                                                                        converted_raw_avg_destination, registered_white_destination)
     os.system(registration_command_brain + ';' + registration_command_white)

@@ -2,39 +2,11 @@
 	"name": "localwhitematternoiseregression",
 	"label": "localWhiteMatterNoiseRegression: Removes white matter noise from adjacent gray matter voxels",
 	"description": "This gear performs spherical search around the white matter and removes average white matter signal from the adjacent gray matter voxels. It can work with individual nifti images or fmriprep output archives. It needs input images to be in subject's anatomical space. If an fmiprep output is used as input for this gear, make sure you have output images in this space. This algorithm also expects a freesurfer recon-all input. It uses the freesurfer directory to get white matter and brain masks.",
-	"author": "Marcello Mattar, Andrew Bock",
-	"maintainer": "Ozenc Taskin <huseyinozenc.taskin@pennmedicine.upenn.edu>",
-	"source": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/blob/master/code/remove_localWM_FwVersion.m",
-	"url": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/tree/master/gear",
-	"version": "0.1.0",
-	"custom": {
-		"flywheel": {
-			"suite": "GKAguirreLab"
-		},
-		"docker-image": ""
-	},
-	"license": "Other",
-	"config": {
-		"radius":  {
-			"default": "15",
-  			"description": "Search radius for the white matter removal script",
-  			"type": "string"
-		},
-		"whiteMatterBinaryThreshold":  {
-			"default": 50,
-  			"description": "Threshold used for making white matter binary masks. Values on Freesurfer segmentation images this gear uses are between 0-110",
-  			"type": "number"
-		},
-		"BrainMaskBinaryThreshold":  {
-			"default": 50,
-  			"description": "Threshold used for making binary brain masks. Values on Freesurfer segmentation images this gear uses are between 0-110",
-  			"type": "number"
-		}
-	},
+	"version": "0",
 	"inputs": {
 		"fmriprepOutputArchive": {
-			"description": "fmriprep output archive",
 			"base": "file",
+			"description": "fmriprep output archive",
 			"optional": false,
 			"type": {
 				"enum": [
@@ -43,14 +15,50 @@
 			}
 		},
 		"reconAllArchive": {
-			"description": "Recon-all archive. Used for getting masks for the white matter removal algorithm",
 			"base": "file",
+			"description": "Recon-all archive. Used for getting masks for the white matter removal algorithm",
 			"optional": false,
 			"type": {
 				"enum": [
 					"archive"
 				]
 			}
+		}
+	},
+	"config": {
+		"BrainMaskBinaryThreshold": {
+			"default": 50,
+			"description": "Threshold used for making binary brain masks. Values on Freesurfer segmentation images this gear uses are between 0-110",
+			"type": "number"
+		},
+		"radius": {
+			"default": "15",
+			"description": "Search radius for the white matter removal script",
+			"type": "string"
+		},
+		"saveIntermediate": {
+			"default": false,
+			"description": "Save intermediate files. Includes the binary masks used for the white matter regression",
+			"type": "boolean"
+		},
+		"whiteMatterBinaryThreshold": {
+			"default": 50,
+			"description": "Threshold used for making white matter binary masks. Values on Freesurfer segmentation images this gear uses are between 0-110",
+			"type": "number"
+		}
+	},
+	"author": "Andrew Bock",
+	"maintainer": "Ozenc Taskin",
+	"license": "Other",
+	"source": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/blob/master/code/remove_localWM_FwVersion.m",
+	"url": "https://github.com/gkaguirrelab/localWhiteMatterNoiseRegression/tree/master/gear",
+	"custom": {
+		"flywheel": {
+			"suite": "GKAguirreLab"
+		},
+		"gear-builder": {
+			"category": "analysis",
+			"image": "gkaguirrelab/localwhitematterregression:0.1.0"
 		}
 	}
 }
