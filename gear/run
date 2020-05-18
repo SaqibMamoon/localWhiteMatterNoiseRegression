@@ -148,20 +148,8 @@ brainMask = os.path.join(brain_folder, 'brainMask.png')
 whiteMask = os.path.join(white_folder, 'whiteMask.png')
 
 # Make gifs
-make_gif(brain_folder, 'brainmask', gif_folder)
-make_gif(white_folder, 'whitemask', gif_folder)
-
-# Make html
-html_file = open('%s/index.html' % os.path.join(main_diagnostics_file, 'gifs'),'w')
-html_content = '''
-<h1>Brain Mask</h1>
-<img src="./%s" style="float: left; width: 100%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
-<p style="clear: both;">
-<h1>White Matter Mask</h1>
-<img src="./%s" style="float: left; width: 100%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
-<p style="clear: both;"> ''' % ('images/brainmask.gif', 'images/whitemask.gif')
-html_file.write(html_content)
-html_file.close() 
+make_gif(brain_folder, 'brainmask', final_output_dir)
+make_gif(white_folder, 'whitemask', final_output_dir)
 
 # Loop through images and do the white matter regression
 for i in images_in_T1:
