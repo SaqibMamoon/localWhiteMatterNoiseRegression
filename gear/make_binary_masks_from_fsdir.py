@@ -1,6 +1,7 @@
 import os
+import nibabel as nb
 
-def make_binary_masks_from_fsdir(freesurfer_subject_folder, freesurfer_environment_path, fsl_environment_path, output_path, threshold_brain=50, threshold_white=50):
+def make_binary_masks_from_fsdir(freesurfer_subject_folder, template_bold, fsl_identity_mat, freesurfer_environment_path, fsl_environment_path, output_path, threshold_brain=50, threshold_white=50):
     
     # Load white matter, brain and rawavg 
     brain_mask = os.path.join(freesurfer_subject_folder, 'mri', 'brainmask.mgz')    
@@ -30,15 +31,28 @@ def make_binary_masks_from_fsdir(freesurfer_subject_folder, freesurfer_environme
                                                                        converted_raw_avg_destination, registered_white_destination)
     os.system(registration_command_brain + ';' + registration_command_white)
     
+    # Downsample the images to the bold resolution
+    resampled_brain = os.path.join(output_path, 'resampledBrain.nii.gz')    
+    resampled_white = os.path.join(output_path, 'resampledWhite.nii.gz')
+    resample_command_brain = '%s -in %s -ref %s -applyxfm -init %s -out %s' % (os.path.join(fsl_environment_path, 'flirt'),
+                                                                                registered_brain_destination, template_bold, fsl_identity_mat,
+                                                                                resampled_brain)    
+    resample_command_white = '%s -in %s -ref %s -applyxfm -init %s -out %s' % (os.path.join(fsl_environment_path, 'flirt'),
+                                                                                registered_white_destination, template_bold, fsl_identity_mat,
+                                                                                resampled_white)
+    os.system(resample_command_brain)
+    os.system(resample_command_white)
+    
+    
     # Binarize the masks 
     binary_brain_mask = os.path.join(output_path, 'binaryBrainMask.nii.gz')
     binary_white_mask = os.path.join(output_path, 'binaryWhiteMask.nii.gz')
     binarize_brain_command = '%s %s -thr %s -bin %s' % (os.path.join(fsl_environment_path, 'fslmaths'),
-                                                        registered_brain_destination, threshold_brain,
+                                                        resampled_brain, threshold_brain,
                                                         binary_brain_mask)
     binarize_white_command = '%s %s -thr %s -bin %s' % (os.path.join(fsl_environment_path, 'fslmaths'),
-                                                        registered_white_destination, threshold_white,
+                                                        resampled_white, threshold_white,
                                                         binary_white_mask)    
     os.system(binarize_brain_command + ';' + binarize_white_command)
     
-    return (converted_raw_avg_destination, registered_brain_destination, registered_white_destination, binary_brain_mask, binary_white_mask)
+    return (converted_raw_avg_destination, registered_brain_destination, registered_white_destination, resampled_brain, resampled_white, binary_brain_mask, binary_white_mask)

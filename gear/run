@@ -59,6 +59,7 @@ fsl_environment_path = 'FSLDIR=/usr/lib/fsl/5.0;. /etc/fsl/5.0/fsl.sh;PATH=${FSL
 freesurfer_environment_path = 'export FREESURFER_HOME=/freesurfer;/bin/bash -c \'source $FREESURFER_HOME/FreeSurferEnv.sh &>/dev/null\';export SUBJECTS_DIR=%s;/freesurfer/bin/'
 mcr_path = '/usr/local/MATLAB/MATLAB_Runtime/v97' 
 compiled_matlab_function = '/opt/compiled_localWM/run_remove_localWM_FwVersion.sh'
+fsl_identity = '/usr/share/fsl/5.0/etc/flirtsch/ident.mat'
 
 # Unzip the fmriprep zip
 fmriprepOutputArchive_folder = os.path.join(flywheel_base, 'input/fmriprepOutputArchive')
@@ -104,21 +105,8 @@ saveIntermediate = config['saveIntermediate']
 # Run the mask maker script
 intermediate_files = '/intermediate_files'
 os.system('mkdir %s' % intermediate_files)
-converted_raw_avg, registered_brain, registered_white, brain_mask, white_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, freesurfer_environment_path, fsl_environment_path, intermediate_files, threshold_brain=BrainMaskBinaryThreshold, threshold_white=whiteMatterBinaryThreshold)
-
-# Resample mask to the fmri resolution
-a_timeseries = images_in_T1[0]
-fsl_identity = '/usr/share/fsl/5.0/etc/flirtsch/ident.mat'
-resampled_white = os.path.join(intermediate_files, 'resampled_whiteMatter_mask.nii.gz')
-resampled_brain = os.path.join(intermediate_files, 'resampled_brain_mask.nii.gz')
-resample_command_white = '%s -in %s -ref %s -applyxfm -init %s -out %s' % (os.path.join(fsl_environment_path, 'flirt'),
-                                                                            white_matter_mask, a_timeseries, fsl_identity,
-                                                                            resampled_white)
-resample_command_brain = '%s -in %s -ref %s -applyxfm -init %s -out %s' % (os.path.join(fsl_environment_path, 'flirt'),
-                                                                            brain_mask, a_timeseries, fsl_identity,
-                                                                            resampled_brain)
-os.system(resample_command_brain)
-os.system(resample_command_white)
+template_bold = images_in_T1[0]
+converted_raw_avg, registered_brain, registered_white, resampled_brain, resampled_white, brain_mask, white_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, template_bold, fsl_identity, freesurfer_environment_path, fsl_environment_path, intermediate_files, threshold_brain=BrainMaskBinaryThreshold, threshold_white=whiteMatterBinaryThreshold)
 
 # Save intermediate files if requested
 if saveIntermediate:
@@ -141,17 +129,17 @@ n_i, n_j, n_k = raw_loaded.shape
 center_i = (n_i - 1) // 2  # // for integer division
 center_j = (n_j - 1) // 2
 center_k = (n_k - 1) // 2
-raw_loaded = nib.load(resampled_white)
+raw_loaded = nib.load(white_matter_mask)
 n_i2, n_j2, n_k2 = raw_loaded.shape
 center_i2 = (n_i2 - 1) // 2  # // for integer division
 center_j2 = (n_j2 - 1) // 2
 center_k2 = (n_k2 - 1) // 2
 
-make_plot(converted_raw_avg, 'NA', 'Original T1', 'T1.png', center_i, center_j, center_k, [2,2,1], brain_folder)
-make_plot(registered_brain, 'NA', 'Registered Brain', 'brain.png', center_i, center_j, center_k, [2,2,1], brain_folder)
-make_plot(registered_white, 'NA', 'Registered White Matter', 'white.png', center_i, center_j, center_k, [2,2,1], white_folder)
-make_plot(resampled_brain, 'NA', 'Brain Mask', 'brainMask.png', center_i2, center_j2, center_k2, [2,2,1], brain_folder)
-make_plot(resampled_white, 'NA', 'White Matter Mask', 'whiteMask.png', center_i2, center_j2, center_k2, [2,2,1], white_folder)
+make_plot(converted_raw_avg, 'NA', 'Original T1', 'T1.png', center_i, center_j, center_k, [1,1,1], brain_folder)
+make_plot(registered_brain, 'NA', 'Registered Brain', 'brain.png', center_i, center_j, center_k, [1,1,1], brain_folder)
+make_plot(registered_white, 'NA', 'Registered White Matter', 'white.png', center_i, center_j, center_k, [1,1,1], white_folder)
+make_plot(brain_mask, 'NA', 'Brain Mask', 'brainMask.png', center_i2, center_j2, center_k2, [1,1,1], brain_folder)
+make_plot(white_matter_mask, 'NA', 'White Matter Mask', 'whiteMask.png', center_i2, center_j2, center_k2, [1,1,1], white_folder)
 T1 = os.path.join(brain_folder, 'T1.png')
 os.system('cp %s %s' % (T1, white_folder))
 brain = os.path.join(brain_folder, 'brain.png')
@@ -179,7 +167,7 @@ html_file.close()
 for i in images_in_T1:
     image_name = os.path.split(i)[1][:-7]
     cmd = '%s %s %s %s %s %s %s' % (compiled_matlab_function, mcr_path,
-                                    i, resampled_brain, resampled_white,
+                                    i, brain_mask, white_matter_mask,
                                     first_output_dir, radius)
     os.system(cmd)
 
