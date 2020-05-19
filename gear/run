@@ -159,5 +159,5 @@ for i in images_in_T1:
                                     first_output_dir, radius)
     os.system(cmd)
 
-os.system('cd %s; zip -q -r %s *' % (os.path.join(main_diagnostics_file, 'gifs'), os.path.join(final_output_dir,'diagnostics.zip')))                
+# os.system('cd %s; zip -q -r %s *' % (os.path.join(main_diagnostics_file, 'gifs'), os.path.join(final_output_dir,'diagnostics.zip')))                
 os.system('cd %s; zip -q -r %s *' % (first_output_dir, os.path.join(final_output_dir,'results.zip')))
