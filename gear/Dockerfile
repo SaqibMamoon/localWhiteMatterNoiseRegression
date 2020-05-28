@@ -7,6 +7,7 @@ RUN mkdir -p ${FLYWHEEL}
 COPY manifest.json run ${FLYWHEEL}
 COPY make_binary_masks_from_fsdir.py make_binary_masks_from_fsdir.py ${FLYWHEEL}
 COPY compiled_localWM/ /opt/compiled_localWM
+COPY compiled_psdFunc/ /opt/compiled_psdFunc
 RUN chmod +x /flywheel/v0/run
 
 # Install required packages    

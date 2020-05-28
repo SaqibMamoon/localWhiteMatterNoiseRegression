@@ -2,7 +2,6 @@
 
 import os
 import json
-import imageio
 import matplotlib.pyplot as plt
 import nibabel as nib
 from make_binary_masks_from_fsdir import make_binary_masks_from_fsdir
@@ -38,14 +37,6 @@ def make_plot(base_image, overlay, title, filename, x, y, z, apect_ratio_vector,
 
     plt.savefig(os.path.join(output_folder, filename))    
 
-def make_gif(image_folder, gif_name, output_folder):
-    
-    # Make a gif out of multiple images
-    images = []
-    for filename in os.listdir(image_folder):
-        images.append(imageio.imread(os.path.join(image_folder, filename)))
-        imageio.mimsave('/%s/%s.gif' % (output_folder, gif_name), images, duration=0.7)
-
 ###################### Define the Paths and parameters ########################
 
 # Set paths and create some folders
@@ -58,7 +49,8 @@ config_path = os.path.join(flywheel_base, 'config.json')
 fsl_environment_path = 'FSLDIR=/usr/lib/fsl/5.0;. /etc/fsl/5.0/fsl.sh;PATH=${FSLDIR}:${PATH};export FSLDIR PATH;/usr/lib/fsl/5.0/'
 freesurfer_environment_path = 'export FREESURFER_HOME=/freesurfer;/bin/bash -c \'source $FREESURFER_HOME/FreeSurferEnv.sh &>/dev/null\';export SUBJECTS_DIR=%s;/freesurfer/bin/'
 mcr_path = '/usr/local/MATLAB/MATLAB_Runtime/v97' 
-compiled_matlab_function = '/opt/compiled_localWM/run_remove_localWM_FwVersion.sh'
+compiled_white_matter_function = '/opt/compiled_localWM/run_remove_localWM_FwVersion.sh'
+compiled_psd_function = '/opt/compiled_psdFunc/run_calcOneSidedPSD.sh'
 fsl_identity = '/usr/share/fsl/5.0/etc/flirtsch/ident.mat'
 
 # Unzip the fmriprep zip
@@ -96,8 +88,7 @@ with open(config_path) as config_file:
 config = job_config['config']
 
 radius = config['radius']
-whiteMatterBinaryThreshold = config['whiteMatterBinaryThreshold']
-BrainMaskBinaryThreshold = config['BrainMaskBinaryThreshold']
+TR = config['TR']
 saveIntermediate = config['saveIntermediate']
 
 # ############################# Process images ##################################
@@ -106,58 +97,69 @@ saveIntermediate = config['saveIntermediate']
 intermediate_files = '/intermediate_files'
 os.system('mkdir %s' % intermediate_files)
 template_bold = images_in_T1[0]
-converted_raw_avg, registered_brain, registered_white, resampled_brain, resampled_white, brain_mask, white_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, template_bold, fsl_identity, freesurfer_environment_path, fsl_environment_path, intermediate_files, threshold_brain=BrainMaskBinaryThreshold, threshold_white=whiteMatterBinaryThreshold)
+resampled_T1, brain_mask, white_matter_mask, gray_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, template_bold, fsl_identity, freesurfer_environment_path, fsl_environment_path, intermediate_files)
 
 # Save intermediate files if requested
 if saveIntermediate:
     os.system('cd %s; zip -q -r %s *' % (intermediate_files, os.path.join(final_output_dir,'intermediate_files.zip')))
 
 # Plot diagnostics
-main_diagnostics_file = '/main_diagnostics'
-os.system('mkdir %s' % main_diagnostics_file)
-gif_main_folder = os.path.join(main_diagnostics_file, 'gifs')
-os.system('mkdir %s' % gif_main_folder)
-gif_folder = os.path.join(gif_main_folder, 'images')
-os.system('mkdir %s' % gif_folder)
-brain_folder = os.path.join(main_diagnostics_file, 'brain')
-white_folder = os.path.join(main_diagnostics_file, 'white')
-os.system('mkdir %s' % brain_folder)
-os.system('mkdir %s' % white_folder)
+main_diagnostics_folder = '/main_diagnostics'
+os.system('mkdir %s' % main_diagnostics_folder)
+images_folder = os.path.join(main_diagnostics_folder, 'images')
+os.system('mkdir %s' % images_folder)
 
-raw_loaded = nib.load(converted_raw_avg)
+raw_loaded = nib.load(brain_mask)
 n_i, n_j, n_k = raw_loaded.shape
 center_i = (n_i - 1) // 2  # // for integer division
 center_j = (n_j - 1) // 2
 center_k = (n_k - 1) // 2
-raw_loaded = nib.load(white_matter_mask)
-n_i2, n_j2, n_k2 = raw_loaded.shape
-center_i2 = (n_i2 - 1) // 2  # // for integer division
-center_j2 = (n_j2 - 1) // 2
-center_k2 = (n_k2 - 1) // 2
 
-make_plot(converted_raw_avg, 'NA', 'Original T1', 'T1.png', center_i, center_j, center_k, [1,1,1], brain_folder)
-make_plot(registered_brain, 'NA', 'Registered Brain', 'brain.png', center_i, center_j, center_k, [1,1,1], brain_folder)
-make_plot(registered_white, 'NA', 'Registered White Matter', 'white.png', center_i, center_j, center_k, [1,1,1], white_folder)
-make_plot(brain_mask, 'NA', 'Brain Mask', 'brainMask.png', center_i2, center_j2, center_k2, [1,1,1], brain_folder)
-make_plot(white_matter_mask, 'NA', 'White Matter Mask', 'whiteMask.png', center_i2, center_j2, center_k2, [1,1,1], white_folder)
-T1 = os.path.join(brain_folder, 'T1.png')
-os.system('cp %s %s' % (T1, white_folder))
-brain = os.path.join(brain_folder, 'brain.png')
-white = os.path.join(white_folder, 'white.png')
-brainMask = os.path.join(brain_folder, 'brainMask.png')
-whiteMask = os.path.join(white_folder, 'whiteMask.png')
+make_plot(resampled_T1, brain_mask, 'Brain mask', 'T1.png', center_i, center_j, center_k, [0.7,1,1.3,0.7,1,1.4], images_folder)
+make_plot(resampled_T1, white_matter_mask, 'White matter mask', 'whiteMask.png', center_i, center_j, center_k, [0.7,1,1.3,0.7,1,1.4], images_folder)
+make_plot(resampled_T1, gray_matter_mask, 'Gray matter mask', 'grayMask.png', center_i, center_j, center_k, [0.7,1,1.3,0.7,1,1.4], images_folder)
 
-# Make gifs
-make_gif(brain_folder, 'brainmask', final_output_dir)
-make_gif(white_folder, 'whitemask', final_output_dir)
-
+# Initiate the html content string
+html_content = '''
+<h1>Resampled T1 overlaid with brain mask</h1>
+<img src="./%s" style="float: left; width: 50%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
+<p style="clear: both;">
+<h1>Resampled T1 overlaid with wm mask</h1>
+<img src="./%s" style="float: left; width: 50%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
+<p style="clear: both;">
+<h1>Resampled T1 overlaid with gm mask</h1>
+<img src="./%s" style="float: left; width: 50%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
+<p style="clear: both;">
+''' % ('images/T1.png', 'images/whiteMask.png', 'images/grayMask.png')
+        
 # Loop through images and do the white matter regression
-for i in images_in_T1:
-    image_name = os.path.split(i)[1][:-7]
-    cmd = '%s %s %s %s %s %s %s' % (compiled_matlab_function, mcr_path,
-                                    i, brain_mask, white_matter_mask,
+for image_to_process in images_in_T1:
+    image_name = os.path.split(image_to_process)[1][:-7]
+    specific_file = os.path.join('/tmp', image_name)
+    os.system('mkdir %s' % specific_file)
+    cmd = '%s %s %s %s %s %s %s' % (compiled_white_matter_function, mcr_path,
+                                    image_to_process, brain_mask, white_matter_mask,
                                     first_output_dir, radius)
     os.system(cmd)
+    processed_image = os.path.join(first_output_dir, 'noWm_%s.nii.gz' % image_name)
+    cmd2 = '%s %s %s %s %s %s %s' % (compiled_psd_function, mcr_path,
+                                    image_to_process, processed_image, gray_matter_mask, TR,
+                                    specific_file)
+    os.system(cmd2)
+    final_diagnostic_image = os.path.join(specific_file, os.listdir(specific_file)[0])
+    os.system('cp %s %s/%s.png' % (final_diagnostic_image, images_folder, image_name))
+    
+    image_string = '''
+    <h1>Before and after processing frequency-power graph for %s</h1>
+    <img src="./%s" style="float: left; width: 50%%; margin-right: 1%%; margin-bottom: 0.5em;" alt="Left_lateral">
+    <p style="clear: both;">
+    ''' % (image_name, 'images/%s.png' % image_name)
+    html_content = html_content + image_string
+    
+# MAKE HTML HERE
+html_file = open('%s/index.html' % main_diagnostics_folder,'w')
+html_file.write(html_content)
+html_file.close()
 
-# os.system('cd %s; zip -q -r %s *' % (os.path.join(main_diagnostics_file, 'gifs'), os.path.join(final_output_dir,'diagnostics.zip')))                
+os.system('cd %s; zip -q -r %s *' % (main_diagnostics_folder, os.path.join(final_output_dir,'diagnostic_images.zip')))
 os.system('cd %s; zip -q -r %s *' % (first_output_dir, os.path.join(final_output_dir,'results.zip')))

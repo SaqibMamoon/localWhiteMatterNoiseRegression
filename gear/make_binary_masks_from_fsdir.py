@@ -19,9 +19,9 @@ def make_binary_masks_from_fsdir(freesurfer_subject_folder, template_bold, fsl_i
     # Extract white and gray matter binary masks from the aparc+aseg labels and save as nifti
     converted_white_destination = os.path.join(output_path, 'binaryWhiteNoResampling.nii.gz') 
     converted_gray_destination = os.path.join(output_path, 'binaryGrayNoResampling.nii.gz')   
-    extract_white = '%s --i %s --wm --o %s' % (os.path.join(freesurfer_environment_path, 'mri_binarize'),
+    extract_white = '%s --i %s --wm --o %s' % (os.path.join(freesurfer_environment_path, 'mri_binarize.bin'),
                                                white_and_gray_matter_segment, converted_white_destination)  
-    extract_gray = '%s --i %s --gm --o %s' % (os.path.join(freesurfer_environment_path, 'mri_binarize'),
+    extract_gray = '%s --i %s --gm --o %s' % (os.path.join(freesurfer_environment_path, 'mri_binarize.bin'),
                                               white_and_gray_matter_segment, converted_gray_destination)     
     os.system(extract_white + ';' + extract_gray)
     
