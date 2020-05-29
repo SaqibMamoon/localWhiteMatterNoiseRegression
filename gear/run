@@ -161,5 +161,5 @@ html_file = open('%s/index.html' % main_diagnostics_folder,'w')
 html_file.write(html_content)
 html_file.close()
 
-os.system('cd %s; zip -q -r %s *' % (main_diagnostics_folder, os.path.join(final_output_dir,'diagnostic_images.zip')))
+os.system('cd %s; zip -q -r %s *' % (main_diagnostics_folder, os.path.join(final_output_dir,'diagnostic_images.html.zip')))
 os.system('cd %s; zip -q -r %s *' % (first_output_dir, os.path.join(final_output_dir,'results.zip')))
