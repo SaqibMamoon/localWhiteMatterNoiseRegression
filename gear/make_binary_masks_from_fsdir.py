@@ -3,7 +3,7 @@ import os
 def make_binary_masks_from_fsdir(freesurfer_subject_folder, template_bold, fsl_identity_mat, freesurfer_environment_path, fsl_environment_path, output_path):
     
     # Load the labels file (aparc+aseg), brain and original T1 
-    brain_mask = os.path.join(freesurfer_subject_folder, 'mri', 'brainmask.mgz')    
+    brain_mask = os.path.join(freesurfer_subject_folder, 'mri', 'brain.mgz')    
     white_and_gray_matter_segment = os.path.join(freesurfer_subject_folder, 'mri', 'aparc+aseg.mgz')
     orig_T1 = os.path.join(freesurfer_subject_folder, 'mri', 'orig.mgz')
      
