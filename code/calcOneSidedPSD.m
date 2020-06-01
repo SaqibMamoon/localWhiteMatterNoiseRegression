@@ -2,7 +2,7 @@ function calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMatterm
 % Return the power spectral denisty of the input signal.
 %
 % Syntax:
-%  [psd, freqSupport] = calcOneSidedPSD( signal, temporalSupport )
+%  [psd, freqSupport] = calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMattermask, TRinSec, outputPath)
 %
 % Description:
 %   The one-sided power spectrum of the signal. The time-base
@@ -12,21 +12,26 @@ function calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMatterm
 %   field in the input dataStruct. The sum of the values in the one-sided
 %   spectrum is equal to the variance of the input signal. Requires
 %   freesurferMatlabLibrary.
+%   This function was modified for regressLocalWhiteMatter gear. The original 
+%   function is located in the MRKLAR repo in Aguirre Lab github. The code
+%   was modified to allow using MRI images as inputs and it compares two 
+%   images before and after regression by plotting logarithmic plots 
+%
 %
 % Inputs:
-%   signal                - 1xn vector of values that is the time-series
-%                           data. Must be of even length (sorry!).
-%   signalSupport         - 1xn vector of values (in units of msecs) that
-%                           is the temporal support for the signal.
-%
+%   rawTimeseriesPath     - Timeseries image before regression. The format
+%                           should be nifti
+%   rawTimeseriesPath     - Timeseries image after regression. The format
+%                           should be nifti
+%   grayMattermask        - Gray matter binary mask in the same space with
+%                           your timeseries images. Used to exclude other
+%                           tissue in the brain for plotting
+%   TRinSec               - Tr in seconds. Used to construct signal support
+%   outputPath            - Output save path. Should not include the image
+%                           name and extention
 % Outputs:
-%   psd                   - 1x(n/2) vector of values that is the power at
-%                           each frequency
-%   psdSupport            - 1x(n/2) vector of values (in units of Hz) that
-%                           is the frequency support for the power
-%                           spectrum.
+%   None 
 %
-
 % Load unprocessed nifti
 boldDataUnprocessed = load_nifti(rawTimeseriesPath);
 timeseriesUnprocessed = boldDataUnprocessed.vol;
@@ -53,19 +58,23 @@ signalAllVoxelsProcessed = reshape(timeseriesProcessed,signalSizeUnprocessed(1)*
 % Get the size of the 2D matrix
 twoDSizeRaw = size(signalAllVoxelsUnprocessed);
 
-% Load thegray matter mask and remove everything else from the brain
+% Load thegray matter mask and reshape
 grayData = load_nifti(grayMattermask);
 gray = grayData.vol;
 grayAllVoxels = gray(:);
 graySize = size(grayAllVoxels);
+
+% Check if the gray matter image resolution is the same as timeseries
 if twoDSizeRaw(1) ~= graySize(1)
     error('Voxel number of gray matter mask is not equal to bold image. Make sure they have the same resolution')
 end
+
+% Remove everything but gray matter from both timeseries
 zeroIndicesGray = find(grayAllVoxels == 0);
 signalAllVoxelsUnprocessed(zeroIndicesGray, :) = [];
 signalAllVoxelsProcessed(zeroIndicesGray, :) = [];
 
-% Get the twoDSize again for the new gray matter matrices
+% Get the new 2D matrix size
 twoDSize = size(signalAllVoxelsUnprocessed);
 
 % Drop the last timepoint if the timeseries length is not even
@@ -99,11 +108,6 @@ for item = combinedMatrices
         % Length of the signal
         dataLength = length(signal);
 
-        % Apologize for not having the solution for odd-length vectors yet
-        if mod(dataLength,2)
-            error('Currently implemented for even-length signals only. Sorry.');
-        end
-
         % derive the deltaT from the stimulusTimebase (units of msecs)
         check = diff(signalSupport);
         deltaT = check(1);
@@ -119,27 +123,31 @@ for item = combinedMatrices
         % Produce the psd support in Hz
         psdSupport = (0:dataLength/2-1)/(deltaT*dataLength/1000);
 
-        % Append to new matrix 
+        % Append psd and psd support to new matrix 
         allPSD(ii,:) = psd;
         allPSDSupport(ii,:) = psdSupport;
     end
     
+    % Append all PSD matrices to the empty cell
     beforeAndAfterPSD{end+1} = allPSD;
     beforeAndAfterPSDSupport{end+1} = allPSDSupport(1,:);
 end
 
+% Get the average psd for both cells (before and after)
 beforeAndAfterPSD{1} = mean(beforeAndAfterPSD{1});
 beforeAndAfterPSD{2} = mean(beforeAndAfterPSD{2});
 
+% Create logarithmic plots for frequency-power and save
 f = figure('visible','off');
-plot(beforeAndAfterPSDSupport{1},beforeAndAfterPSD{1}, 'DisplayName', 'beforeRegression')
+loglog(beforeAndAfterPSDSupport{1},beforeAndAfterPSD{1}, 'DisplayName', 'beforeRegression')
 xlabel('Frequency')
 ylabel('Power')
 hold on 
-plot(beforeAndAfterPSDSupport{2},beforeAndAfterPSD{2}, 'DisplayName', 'afterRegression')
+loglog(beforeAndAfterPSDSupport{2},beforeAndAfterPSD{2}, 'DisplayName', 'afterRegression')
 xlabel('Frequency')
 ylabel('Power')
 hold off
 legend
 saveas(f, fullfile(outputPath, 'psdDiagnostics'), 'png')
+
 end % function
