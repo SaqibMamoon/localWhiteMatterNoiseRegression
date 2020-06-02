@@ -1,8 +1,8 @@
 {
 	"name": "localwhitematternoiseregression",
-	"label": "localWhiteMatterNoiseRegression: Removes white matter noise from adjacent gray matter voxels",
+	"label": "regressLocalWhiteMatter: Removes white matter noise from adjacent gray matter voxels",
 	"description": "This gear performs spherical search around the white matter and removes average white matter signal from the adjacent gray matter voxels. It can work with individual nifti images or fmriprep output archives. It needs input images to be in subject's anatomical space. If an fmiprep output is used as input for this gear, make sure you have output images in this space. This algorithm also expects a freesurfer recon-all input. It uses the freesurfer directory to get white matter and brain masks.",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"inputs": {
 		"fmriprepOutputArchive": {
 			"base": "file",
@@ -26,6 +26,11 @@
 		}
 	},
 	"config": {
+		"NvoxToErodeWM": {
+			"default": "0",
+			"description": "Number of voxels to erode from the white matter mask",
+			"type": "string"
+		},
 		"TR": {
 			"description": "Repetition time of the images. Required for local white matter regression diagnostics",
 			"type": "number"
@@ -52,7 +57,7 @@
 		},
 		"gear-builder": {
 			"category": "analysis",
-			"image": "gkaguirrelab/localwhitematternoiseregression:0.1.2"
+			"image": "gkaguirrelab/regresswhitematter:0.1.4"
 		}
 	}
 }

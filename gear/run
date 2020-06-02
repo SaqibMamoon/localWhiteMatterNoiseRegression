@@ -90,6 +90,7 @@ config = job_config['config']
 radius = config['radius']
 TR = config['TR']
 saveIntermediate = config['saveIntermediate']
+NvoxToErodeWM = config['NvoxToErodeWM']
 
 # ############################# Process images ##################################
 
@@ -97,7 +98,7 @@ saveIntermediate = config['saveIntermediate']
 intermediate_files = '/intermediate_files'
 os.system('mkdir %s' % intermediate_files)
 template_bold = images_in_T1[0]
-resampled_T1, brain_mask, white_matter_mask, gray_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, template_bold, fsl_identity, freesurfer_environment_path, fsl_environment_path, intermediate_files)
+resampled_T1, brain_mask, white_matter_mask, gray_matter_mask = make_binary_masks_from_fsdir(mainrecon_folder, template_bold, fsl_identity, freesurfer_environment_path, fsl_environment_path, NvoxToErodeWM, intermediate_files)
 
 # Save intermediate files if requested
 if saveIntermediate:

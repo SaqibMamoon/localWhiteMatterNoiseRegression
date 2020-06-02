@@ -16,7 +16,7 @@ function remove_localWM_FwVersion(func,brainMask,whiteMatterMask,outputPath,radi
 %
 %   Written by Marcelo G Mattar  Dec 2015
 %   Updated by Andrew S Bock Jan 2016 (minor filename and header changes)
-%   Modified for a Flywheel Gear May4
+%   Modified for a Flywheel Gear May 4
 %% Set default parameters
 if ~exist('radius','var')
     radius = 15;

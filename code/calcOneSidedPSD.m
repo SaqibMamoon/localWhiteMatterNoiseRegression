@@ -32,6 +32,7 @@ function calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMatterm
 % Outputs:
 %   None 
 %
+
 % Load unprocessed nifti
 boldDataUnprocessed = load_nifti(rawTimeseriesPath);
 timeseriesUnprocessed = boldDataUnprocessed.vol;
