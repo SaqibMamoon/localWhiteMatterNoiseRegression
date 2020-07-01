@@ -1,4 +1,4 @@
-function calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMattermask, TRinSec, outputPath)
+function calcOneSidedPSD_FwVersion(rawTimeseriesPath, processedTimeseriesPath, grayMattermask, TRinSec, outputPath)
 % Return the power spectral denisty of the input signal.
 %
 % Syntax:
@@ -12,10 +12,11 @@ function calcOneSidedPSD(rawTimeseriesPath, processedTimeseriesPath, grayMatterm
 %   field in the input dataStruct. The sum of the values in the one-sided
 %   spectrum is equal to the variance of the input signal. Requires
 %   freesurferMatlabLibrary.
-%   This function was modified for regressLocalWhiteMatter gear. The original 
-%   function is located in the MRKLAR repo in Aguirre Lab github. The code
-%   was modified to allow using MRI images as inputs and it compares two 
-%   images before and after regression by plotting logarithmic plots 
+%   This is a wrapper for regressLocalWhiteMatter gear. The original 
+%   function is located in the forwardmodel repo in Aguirre Lab github. 
+%   The code was modified to allow using MRI images as inputs and it       
+%   compares two images before and after regression by plotting logarithmic
+%   plots
 %
 %
 % Inputs:
@@ -104,25 +105,11 @@ for item = combinedMatrices
     allPSDSupport = allPSD;
     
     for ii = 1:twoDSize(1)
+        % Get the signal
         signal = signalAllVoxels(ii,:);
 
-        % Length of the signal
-        dataLength = length(signal);
-
-        % derive the deltaT from the stimulusTimebase (units of msecs)
-        check = diff(signalSupport);
-        deltaT = check(1);
-
-        % meanCenter
-        signal = signal - mean(signal);
-
-        % Calculate the FFT
-        X=fft(signal);
-        psd=X.*conj(X)/(dataLength^2);
-        psd=psd(1:dataLength/2);
-
-        % Produce the psd support in Hz
-        psdSupport = (0:dataLength/2-1)/(deltaT*dataLength/1000);
+        % Run calcOneSidedPSD
+        [psd, psdSupport] = calcOneSidedPSD(signal, signalSupport);
 
         % Append psd and psd support to new matrix 
         allPSD(ii,:) = psd;
