@@ -34,6 +34,9 @@ function calcOneSidedPSD_FwVersion(rawTimeseriesPath, processedTimeseriesPath, g
 %   None 
 %
 
+% Convert TR to number for the gear
+TRinSec = str2num(TRinSec)
+
 % Load unprocessed nifti
 boldDataUnprocessed = load_nifti(rawTimeseriesPath);
 timeseriesUnprocessed = boldDataUnprocessed.vol;
