@@ -50,7 +50,7 @@ fsl_environment_path = 'FSLDIR=/usr/lib/fsl/5.0;. /etc/fsl/5.0/fsl.sh;PATH=${FSL
 freesurfer_environment_path = 'export FREESURFER_HOME=/freesurfer;/bin/bash -c \'source $FREESURFER_HOME/FreeSurferEnv.sh &>/dev/null\';export SUBJECTS_DIR=%s;/freesurfer/bin/'
 mcr_path = '/usr/local/MATLAB/MATLAB_Runtime/v97' 
 compiled_white_matter_function = '/opt/compiled_localWM/run_remove_localWM_FwVersion.sh'
-compiled_psd_function = '/opt/compiled_psdFunc/run_calcOneSidedPSD.sh'
+compiled_psd_function = '/opt/compiled_psdFunc/run_calcOneSidedPSD_FwVersion.sh'
 fsl_identity = '/usr/share/fsl/5.0/etc/flirtsch/ident.mat'
 
 # Unzip the fmriprep zip

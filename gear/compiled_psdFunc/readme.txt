@@ -1,4 +1,4 @@
-calcOneSidedPSD Executable
+calcOneSidedPSD_FwVersion Executable
 
 1. Prerequisites for Deployment 
 
@@ -23,12 +23,12 @@ in the MathWorks Documentation Center.
 
 Files to Package for Standalone 
 ================================
--calcOneSidedPSD 
--run_calcOneSidedPSD.sh (shell script for temporarily setting environment variables and 
-                         executing the application)
+-calcOneSidedPSD_FwVersion 
+-run_calcOneSidedPSD_FwVersion.sh (shell script for temporarily setting environment 
+                                   variables and executing the application)
    -to run the shell script, type
    
-       ./run_calcOneSidedPSD.sh <mcr_directory> <argument_list>
+       ./run_calcOneSidedPSD_FwVersion.sh <mcr_directory> <argument_list>
        
     at Linux or Mac command prompt. <mcr_directory> is the directory 
     where version 9.7 of the MATLAB Runtime is installed or the directory where 
@@ -38,12 +38,12 @@ Files to Package for Standalone
     If you have version 9.7 of the MATLAB Runtime installed in 
     /mathworks/home/application/v97, run the shell script as:
     
-       ./run_calcOneSidedPSD.sh /mathworks/home/application/v97
+       ./run_calcOneSidedPSD_FwVersion.sh /mathworks/home/application/v97
        
     If you have MATLAB installed in /mathworks/devel/application/matlab, 
     run the shell script as:
     
-       ./run_calcOneSidedPSD.sh /mathworks/devel/application/matlab
+       ./run_calcOneSidedPSD_FwVersion.sh /mathworks/devel/application/matlab
 -MCRInstaller.zip
     Note: if end users are unable to download the MATLAB Runtime using the
     instructions in the previous section, include it when building your 
@@ -91,7 +91,7 @@ ${LD_LIBRARY_PATH}:MR/v97/runtime/glnxa64:MR/v97/bin/glnxa64:MR/v97/sys/os/glnxa
         NOTE: The environment variable syntax utilizes forward 
               slashes (/), delimited by colons (:).  
         NOTE: When deploying standalone applications, you can
-              run the shell script file run_calcOneSidedPSD.sh 
+              run the shell script file run_calcOneSidedPSD_FwVersion.sh 
               instead of setting environment variables. See 
               section 2 "Files to Deploy and Package".    
 

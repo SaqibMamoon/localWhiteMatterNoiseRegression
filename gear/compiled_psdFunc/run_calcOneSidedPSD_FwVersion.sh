@@ -27,7 +27,7 @@ else
       args="${args} \"${token}\"" 
       shift
   done
-  eval "\"${exe_dir}/calcOneSidedPSD\"" $args
+  eval "\"${exe_dir}/calcOneSidedPSD_FwVersion\"" $args
 fi
 exit
 
