@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import nibabel as nib
 from make_binary_masks_from_fsdir import make_binary_masks_from_fsdir
 
+# Print disk space
+os.system('df -h')
+
 ################### Define some plotting functions ###########################
 
 def make_plot(base_image, overlay, title, filename, x, y, z, apect_ratio_vector, output_folder):
