@@ -63,18 +63,23 @@ unzipped_folder = '/prep'
 os.system('mkdir %s' % unzipped_folder)
 os.system('unzip -q %s -d %s' % (fmriprepOutputArchive, unzipped_folder))
 mainprep_folder = os.path.join(unzipped_folder, os.listdir(unzipped_folder)[0], 'fmriprep')
+if ~os.path.exists(mainprep_folder):
+    mainprep_folder = os.path.join(unzipped_folder, os.listdir(unzipped_folder)[0])
+
+images_in_T1 = []
 for i in os.listdir(mainprep_folder):
     if 'sub' in i and 'html' not in i:
         prep_subject = os.path.join(mainprep_folder, i)
         for ii in os.listdir(prep_subject):
             if 'ses' in ii:
                 prep_session = os.path.join(prep_subject, ii)
-prep_func_dir = os.path.join(prep_session, 'func')
-images_in_T1 = []
-for image in os.listdir(prep_func_dir):
-    if 'space-T1w_desc-preproc_bold.nii.gz' in image:
-        found_image = os.path.join(prep_func_dir, image)
-        images_in_T1.append(found_image)
+                prep_func_dir = os.path.join(prep_session, 'func')
+
+                for image in os.listdir(prep_func_dir):
+                    if 'space-T1w_desc-preproc_bold.nii.gz' in image:
+                        found_image = os.path.join(prep_func_dir, image)
+                        images_in_T1.append(found_image)
+
 
 # Unzip the recon-all archive
 reconAllArchive_folder = os.path.join(flywheel_base, 'input/reconAllArchive')
